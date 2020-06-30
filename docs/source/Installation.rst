@@ -4,28 +4,28 @@ Installation guide
 Dependencies
 ------------
 
-``Hi-LASSO_spark`` support Python 3.6+, Additionally, you will need ``numpy``, ``scipy``, and ``glmnet``. 
+``Hi-LASSO-spark`` support Python 3.6+, Additionally, you will need ``numpy``, ``scipy``, and ``glmnet``. 
 
 
 Installing pyspark
 ----------------------
-To run Hi-LASSO_spark, you need to install a pyspark. 
+To run Hi-LASSO-spark, you need to install a pyspark. 
 In the prompt environment, run the following installation and update::
 
   pip install pyspark
   
 After installing pyspark, it will be installed with 2.4.6 version. 
-To run Hi_LASSO_spark, you must upgrade to version 3.0.0.::
+To run Hi-LASSO-spark, you must upgrade to version 3.0.0.::
 
   pip install pyspark --upgrade
   
 After the upgrade, 3.0.0 version is executed.
 
 
-Installing Hi-LASSO_spark
+Installing Hi-LASSO-spark
 ----------------------
 
-``Hi-LASSO_spark`` is available through PyPI and can easily be installed with a
+``Hi-LASSO-spark`` is available through PyPI and can easily be installed with a
 pip install::
 
     pip install hi_lasso_pyspark
