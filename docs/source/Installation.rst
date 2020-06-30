@@ -33,7 +33,7 @@ pip install::
 The PyPI version is updated regularly, however for the latest update, you
 should clone from GitHub and install it directly::
 
-    git clone https://github.com/datax-lab/Hi-LASSO_spark.git
+    git clone https://github.com/datax-lab/Hi_Lasso_spark.git
     cd hi_lasso_spark
     python setup.py
 	
