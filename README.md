@@ -14,7 +14,7 @@ pip install hi_lasso_pyspark
 ```
 
 ## Documentation
-Read the documentation on [readthedocs](https://seungha-jeong-hi-lasso-spark.readthedocs-hosted.com/en/latest/index.html)
+Read the documentation on [readthedocs](https://hi-lasso-spark.readthedocs.io/en/latest/index.html)
 
 ## Quick Start
 ```python
