@@ -1,0 +1,397 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API Reference &mdash; Hi-Lasso-spark 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Getting Started" href="Test_package.html" />
+    <link rel="prev" title="Installation guide" href="Installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Hi-Lasso-spark
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-hi_lasso_pyspark.Hi_LASSO_spark">Hi-LASSO_spark model</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Test_package.html">Getting Started</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hi-Lasso-spark</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>API Reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api_reference.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-hi_lasso_pyspark.Hi_LASSO_spark">
+<span id="hi-lasso-spark-model"></span><h2>Hi-LASSO_spark model<a class="headerlink" href="#module-hi_lasso_pyspark.Hi_LASSO_spark" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark">
+<em class="property">class </em><code class="sig-prename descclassname">hi_lasso_pyspark.Hi_LASSO_spark.</code><code class="sig-name descname">HiLASSO_Spark</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">alpha=0.95</em>, <em class="sig-param">q1='auto'</em>, <em class="sig-param">q2='auto'</em>, <em class="sig-param">B='auto'</em>, <em class="sig-param">d=0.05</em>, <em class="sig-param">cv=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hi_lasso_pyspark/Hi_LASSO_spark.html#HiLASSO_Spark"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Hi-LASSO_Spark(High-Demensinal LASSO Spark) is to improve the LASSO solutions for extremely high-dimensional data using pyspark.</p>
+<p>PySpark is the Python API written in python to support Apache Spark.
+Apache Spark is a distributed framework that can handle Big Data analysis.
+Spark is basically a computational engine, that works with huge sets of data by processing them in parallel and batch systems.</p>
+<ul class="simple">
+<li><p>RDD: PySpark basically helps data scientists to easily work with Resilient Distributed Datasets.</p></li>
+<li><p>Speed: This framework is known for its greater speed compared with the other traditional data processing frameworks.</p></li>
+<li><p>Caching and Disk persistence: This has a powerful caching and disk persistence mechanism for datasets that make it incredibly faster and better than others.</p></li>
+<li><p>Resilient Distributed Datasets – these are basically datasets that are fault-tolerant and distributed in nature.</p></li>
+</ul>
+<p>There are two types of data operations:  Transformations and Actions. Transformations are the operations that work on input data set and apply a set of transform method on them.
+And Actions are applied by direction PySpark to work upon them.</p>
+<p>The main contributions of Hi-LASSO are as following:</p>
+<ul class="simple">
+<li><p>Rectifying systematic bias introduced by bootstrapping.</p></li>
+<li><p>Refining the computation for importance scores.</p></li>
+<li><p>Providing a statistical strategy to determine the number of bootstrapping.</p></li>
+<li><p>Taking advantage of global oracle property.</p></li>
+<li><p>Allowing tests of significance for feature selection with appropriate distribution.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>array-like of shape</em><em> (</em><em>n_sample</em><em>, </em><em>n_feature</em><em>)</em>) – predictor variables</p></li>
+<li><p><strong>y</strong> (<em>array-like of shape</em><em> (</em><em>n_sample</em><em>,</em><em>)</em>) – response variables</p></li>
+<li><p><strong>q1</strong> (<em>'auto'</em><em> or </em><em>int</em><em>, </em><em>optional</em><em> [</em><em>default = 'auto'</em><em>]</em>) – The number of predictors to randomly selecting in Procedure 1.
+When to set ‘auto’, use q1 as number of samples.</p></li>
+<li><p><strong>q2</strong> (<em>'auto'</em><em> or </em><em>int</em><em>, </em><em>optional</em><em> [</em><em>default = 'auto'</em><em>]</em>) – The number of predictors to randomly selecting in Procedure 2.
+When to set ‘auto’, use q2 as number of samples.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em> [</em><em>default=0.95</em><em>]</em>) – confidence level for determination of bootstrap sample size.</p></li>
+<li><p><strong>d</strong> (<em>float</em><em> [</em><em>default=0.05</em><em>]</em>) – sampling error for determination of bootsrap sample size.</p></li>
+<li><p><strong>B</strong> (<em>'auto'</em><em> or </em><em>int</em><em>, </em><em>optional</em><em> [</em><em>default='auto'</em><em>]</em>) – The number of bootstrap samples.
+When to set ‘auto’, B is determined by statistical strategy(using alpha and d).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>n</strong> (<em>int</em>) – number of samples.</p></li>
+<li><p><strong>p</strong> (<em>int</em>) – number of features.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Hi_LASSO_spark_fin</span> <span class="k">import</span> <span class="n">HiLASSO_Spark</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">HiLASSO_Spark</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">coef_</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">p_values_</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">selected_var_</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.Estimate_coefficient_Adaptive">
+<code class="sig-name descname">Estimate_coefficient_Adaptive</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hi_lasso_pyspark/Hi_LASSO_spark.html#HiLASSO_Spark.Estimate_coefficient_Adaptive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.Estimate_coefficient_Adaptive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimation of coefficients for each bootstrap sample using Adaptive_LASSO</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>coef_result</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>coefficient for Adaprive_LASSO</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.Estimate_coefficient_Elastic">
+<code class="sig-name descname">Estimate_coefficient_Elastic</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hi_lasso_pyspark/Hi_LASSO_spark.html#HiLASSO_Spark.Estimate_coefficient_Elastic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.Estimate_coefficient_Elastic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimation of coefficients for each bootstrap sample using Elastic_net</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>coef_result</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>coefficient for Elastic_Net</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.P_value_calculate">
+<code class="sig-name descname">P_value_calculate</code><span class="sig-paren">(</span><em class="sig-param">coef_result</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hi_lasso_pyspark/Hi_LASSO_spark.html#HiLASSO_Spark.P_value_calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.P_value_calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute p-values of each predictor for Statistical Test of Variable Selection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">significance_level=0.05</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hi_lasso_pyspark/Hi_LASSO_spark.html#HiLASSO_Spark.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the model with Procedure 1 and Procedure 2.</p>
+<p>Procedure 1: Compute importance scores for predictors.</p>
+<p>Procedure 2: Compute coefficients and Select variables.</p>
+<p>Parallel processing of Spark
+One important parameter for parallel collections is the number of partitions to cut the dataset into. Spark will run one task for each partition of the cluster.
+Typically you want 2-4 partitions for each CPU in your cluster.
+Normally, Spark tries to set the number of partitions automatically based on your cluster.
+However, you can also set it manually by passing it as a second parameter to parallelize (e.g. sc.parallelize(data, 10)).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>significance_level</strong> (<em>float</em><em> [</em><em>default=0.05</em><em>]</em>) – Criteria used for selecting variables.</p>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>sc.parallelize</strong><strong>(</strong><strong>)</strong> (<em>method</em>) – The sc.parallelize() method is the SparkContext’s parallelize method to create a parallelized collection.
+This allows Spark to distribute the data across multiple nodes, instead of depending on a single node to process the data.</p></li>
+<li><p><strong>map</strong><strong>(</strong><strong>)</strong> (<em>method</em>) – A map is a transformation operation in Apache Spark. It applies to each element of RDD and it returns the result as new RDD.
+In the Map, operation developer can define his own custom business logic. The same logic will be applied to all the elements of RDD.</p></li>
+<li><p><strong>Procedure_1_coef_</strong> (<em>array</em>) – Estimated coefficients by Elastic_net.</p></li>
+<li><p><strong>Procedure_2_coef_</strong> (<em>array</em>) – Estimated coefficients by Adaptive_LASSO.</p></li>
+<li><p><strong>coef_</strong> (<em>array</em>) – Estimated coefficients by Hi-LASSO.</p></li>
+<li><p><strong>p_values_</strong> (<em>array</em>) – P-values of each coefficients.</p></li>
+<li><p><strong>selected_var_</strong> (<em>array</em>) – Selected variables by significance test.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>self</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.standardization">
+<code class="sig-name descname">standardization</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hi_lasso_pyspark/Hi_LASSO_spark.html#HiLASSO_Spark.standardization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.standardization" title="Permalink to this definition">¶</a></dt>
+<dd><p>The response is mean-corrected and the predictors are standardized</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>array-like of shape</em><em> (</em><em>n_sample</em><em>, </em><em>n_feature</em><em>)</em>) – predictor</p></li>
+<li><p><strong>y</strong> (<em>array-like of shape</em><em> (</em><em>n_sample</em><em>,</em><em>)</em>) – response</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>np.ndarray</em></p></li>
+<li><p><em>scaled_X, scaled_y, std</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Test_package.html" class="btn btn-neutral float-right" title="Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Installation.html" class="btn btn-neutral float-left" title="Installation guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Seungha Jeong
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

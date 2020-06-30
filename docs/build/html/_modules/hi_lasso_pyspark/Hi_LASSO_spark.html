@@ -1,0 +1,503 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hi_lasso_pyspark.Hi_LASSO_spark &mdash; Hi-Lasso-spark 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Hi-Lasso-spark
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Test_package.html">Getting Started</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Hi-Lasso-spark</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>hi_lasso_pyspark.Hi_LASSO_spark</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for hi_lasso_pyspark.Hi_LASSO_spark</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Author: Seungha Jeong &lt;jsh29368602@gmail.com&gt;</span>
+<span class="c1"># License: MIT</span>
+<span class="c1"># Date: 30, Jun 2020</span>
+
+<span class="c1"># Import package</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">binom</span><span class="p">,</span> <span class="n">norm</span>
+<span class="kn">import</span> <span class="nn">glmnet</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">binascii</span>
+
+<span class="kn">from</span> <span class="nn">pyspark</span> <span class="k">import</span> <span class="n">SparkContext</span><span class="p">,</span> <span class="n">SparkConf</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="k">import</span> <span class="n">SQLContext</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    • SparkConf() : Configuration for a Spark application. Used to set various Spark parameters as key-value pairs.</span>
+<span class="sd">                    Most of the time, you would create a SparkConf object with new SparkConf(), which will load values from any spark.</span>
+<span class="sd">                    For example, you can write new SparkConf().setMaster(&quot;local&quot;).setAppName(&quot;My app&quot;).</span>
+
+<span class="sd">    • getOrCreate() : This function may be used to get or instantiate a SparkContext and register it as a singleton object.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">conf</span> <span class="o">=</span> <span class="n">SparkConf</span><span class="p">()</span><span class="o">.</span><span class="n">setMaster</span><span class="p">(</span><span class="s2">&quot;local[*]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setAppName</span><span class="p">(</span><span class="s2">&quot;PySparkShell&quot;</span><span class="p">)</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">SparkContext</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+<span class="n">sqlContext</span> <span class="o">=</span> <span class="n">SQLContext</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="HiLASSO_Spark"><a class="viewcode-back" href="../../api_reference.html#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark">[docs]</a><span class="k">class</span> <span class="nc">HiLASSO_Spark</span><span class="p">:</span>
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Hi-LASSO_Spark(High-Demensinal LASSO Spark) is to improve the LASSO solutions for extremely high-dimensional data using pyspark. </span>
+<span class="sd">    </span>
+<span class="sd">    PySpark is the Python API written in python to support Apache Spark. </span>
+<span class="sd">    Apache Spark is a distributed framework that can handle Big Data analysis. </span>
+<span class="sd">    Spark is basically a computational engine, that works with huge sets of data by processing them in parallel and batch systems.</span>
+<span class="sd">    </span>
+<span class="sd">    • RDD: PySpark basically helps data scientists to easily work with Resilient Distributed Datasets.</span>
+<span class="sd">    • Speed: This framework is known for its greater speed compared with the other traditional data processing frameworks.</span>
+<span class="sd">    • Caching and Disk persistence: This has a powerful caching and disk persistence mechanism for datasets that make it incredibly faster and better than others.</span>
+<span class="sd">    • Resilient Distributed Datasets – these are basically datasets that are fault-tolerant and distributed in nature. </span>
+<span class="sd">    There are two types of data operations:  Transformations and Actions. Transformations are the operations that work on input data set and apply a set of transform method on them. </span>
+<span class="sd">    And Actions are applied by direction PySpark to work upon them.</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    The main contributions of Hi-LASSO are as following:</span>
+<span class="sd">    </span>
+<span class="sd">    • Rectifying systematic bias introduced by bootstrapping.</span>
+<span class="sd">    • Refining the computation for importance scores.</span>
+<span class="sd">    • Providing a statistical strategy to determine the number of bootstrapping.</span>
+<span class="sd">    • Taking advantage of global oracle property.</span>
+<span class="sd">    • Allowing tests of significance for feature selection with appropriate distribution.</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------        </span>
+<span class="sd">    X: array-like of shape (n_sample, n_feature)</span>
+<span class="sd">       predictor variables    </span>
+<span class="sd">    y: array-like of shape (n_sample,)</span>
+<span class="sd">       response variables    </span>
+<span class="sd">    q1: &#39;auto&#39; or int, optional [default = &#39;auto&#39;]</span>
+<span class="sd">        The number of predictors to randomly selecting in Procedure 1.</span>
+<span class="sd">        When to set &#39;auto&#39;, use q1 as number of samples.</span>
+<span class="sd">    q2: &#39;auto&#39; or int, optional [default = &#39;auto&#39;]</span>
+<span class="sd">        The number of predictors to randomly selecting in Procedure 2.</span>
+<span class="sd">        When to set &#39;auto&#39;, use q2 as number of samples.        </span>
+<span class="sd">    alpha: float [default=0.95]</span>
+<span class="sd">        confidence level for determination of bootstrap sample size.</span>
+<span class="sd">    d: float [default=0.05]</span>
+<span class="sd">        sampling error for determination of bootsrap sample size.</span>
+<span class="sd">    B: &#39;auto&#39; or int, optional [default=&#39;auto&#39;]</span>
+<span class="sd">        The number of bootstrap samples.</span>
+<span class="sd">        When to set &#39;auto&#39;, B is determined by statistical strategy(using alpha and d). </span>
+<span class="sd">        </span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------    </span>
+<span class="sd">    n : int</span>
+<span class="sd">        number of samples.</span>
+<span class="sd">    p : int</span>
+<span class="sd">        number of features.</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from Hi_LASSO_spark_fin import HiLASSO_Spark</span>
+<span class="sd">    &gt;&gt;&gt; model = HiLASSO_Spark(X, y)</span>
+<span class="sd">    &gt;&gt;&gt; model.fit()</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; model.coef_</span>
+<span class="sd">    &gt;&gt;&gt; model.p_values_</span>
+<span class="sd">    &gt;&gt;&gt; model.selected_var_ </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span> <span class="n">q1</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">q2</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">B</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">cv</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_sample</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_feature</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">q1</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span> <span class="k">else</span> <span class="n">q1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">q1</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span> <span class="k">else</span> <span class="n">q2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="o">=</span> <span class="n">cv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="n">loc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">q1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_feature</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">q1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_feature</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">B</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span> <span class="k">else</span> <span class="n">B</span>
+             
+        
+   
+<div class="viewcode-block" id="HiLASSO_Spark.standardization"><a class="viewcode-back" href="../../api_reference.html#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.standardization">[docs]</a>    <span class="k">def</span> <span class="nf">standardization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The response is mean-corrected and the predictors are standardized</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        X: array-like of shape (n_sample, n_feature)</span>
+<span class="sd">           predictor              </span>
+<span class="sd">        y: array-like of shape (n_sample,)</span>
+<span class="sd">           response</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">        scaled_X, scaled_y, std</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">mean_x</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="n">X</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">mean_x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span> 
+        <span class="n">X_sc</span> <span class="o">=</span> <span class="n">mean_x</span> <span class="o">/</span> <span class="n">std</span>
+        <span class="n">y_sc</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">y</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">X_sc</span><span class="p">,</span> <span class="n">y_sc</span><span class="p">,</span> <span class="n">std</span></div>
+
+    
+
+<div class="viewcode-block" id="HiLASSO_Spark.fit"><a class="viewcode-back" href="../../api_reference.html#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">significance_level</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">):</span>
+        
+        <span class="sd">&quot;&quot;&quot;Fit the model with Procedure 1 and Procedure 2. </span>
+<span class="sd">        </span>
+<span class="sd">        Procedure 1: Compute importance scores for predictors. </span>
+<span class="sd">        </span>
+<span class="sd">        Procedure 2: Compute coefficients and Select variables.</span>
+<span class="sd">        </span>
+<span class="sd">        Parallel processing of Spark</span>
+<span class="sd">        One important parameter for parallel collections is the number of partitions to cut the dataset into. Spark will run one task for each partition of the cluster. </span>
+<span class="sd">        Typically you want 2-4 partitions for each CPU in your cluster. </span>
+<span class="sd">        Normally, Spark tries to set the number of partitions automatically based on your cluster. </span>
+<span class="sd">        However, you can also set it manually by passing it as a second parameter to parallelize (e.g. sc.parallelize(data, 10)).</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------      </span>
+<span class="sd">        significance_level : float [default=0.05]</span>
+<span class="sd">            Criteria used for selecting variables.</span>
+<span class="sd">        </span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sc.parallelize(): method</span>
+<span class="sd">            The sc.parallelize() method is the SparkContext&#39;s parallelize method to create a parallelized collection. </span>
+<span class="sd">            This allows Spark to distribute the data across multiple nodes, instead of depending on a single node to process the data.</span>
+<span class="sd">        map(): method</span>
+<span class="sd">            A map is a transformation operation in Apache Spark. It applies to each element of RDD and it returns the result as new RDD. </span>
+<span class="sd">            In the Map, operation developer can define his own custom business logic. The same logic will be applied to all the elements of RDD.</span>
+<span class="sd">        Procedure_1_coef_ : array</span>
+<span class="sd">            Estimated coefficients by Elastic_net.</span>
+<span class="sd">        Procedure_2_coef_ : array</span>
+<span class="sd">            Estimated coefficients by Adaptive_LASSO.</span>
+<span class="sd">        coef_ : array</span>
+<span class="sd">            Estimated coefficients by Hi-LASSO.</span>
+<span class="sd">        p_values_ : array</span>
+<span class="sd">            P-values of each coefficients.</span>
+<span class="sd">        selected_var_: array</span>
+<span class="sd">            Selected variables by significance test.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self : object </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Procedure 1: Compute coefficients and importance scores for predictors.</span>
+        <span class="c1"># Perform parallel processing by mapping the number of bootstraps.</span>
+        <span class="n">Elastic_Estimate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Estimate_coefficient_Elastic</span>
+        <span class="n">Procedure_1_coef</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">),</span> <span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">Elastic_Estimate</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="n">Procedure_1_coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">Procedure_1_coef</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+        
+        
+        <span class="c1"># Compute the importance scores</span>
+        <span class="n">Importance_score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Procedure_1_coef_</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Importance_score_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Importance_score</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="n">Importance_score</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Importance_score_fin</span> <span class="o">=</span> <span class="n">Importance_score_2</span> <span class="o">/</span> <span class="n">Importance_score_2</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Procedure_1_fin.&#39;</span><span class="p">)</span>
+        
+        
+        <span class="c1"># Procedure 2: Compute coefficients and Select variables.</span>
+        <span class="c1"># Perform parallel processing by mapping the number of bootstraps.</span>
+        <span class="n">Adaptive_Estimate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Estimate_coefficient_Adaptive</span>
+        <span class="n">Procedure_2_coef</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">),</span> <span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">Adaptive_Estimate</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="n">Procedure_2_coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">Procedure_2_coef</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="c1"># Estimate Final Coefficient and Select variables.</span>
+        <span class="n">coef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">Procedure_2_coef_</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">coef</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">P_value_calculate</span><span class="p">(</span><span class="n">Procedure_2_coef_</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p_values</span> <span class="o">&lt;</span> <span class="n">significance_level</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_feature</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">Procedure_2_coef_</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Procedure_2_fin.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+    
+    
+    
+<div class="viewcode-block" id="HiLASSO_Spark.Estimate_coefficient_Elastic"><a class="viewcode-back" href="../../api_reference.html#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.Estimate_coefficient_Elastic">[docs]</a>    <span class="k">def</span> <span class="nf">Estimate_coefficient_Elastic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimation of coefficients for each bootstrap sample using Elastic_net</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        coef_result : coefficient for Elastic_Net        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Set random seed as each bootstrap_number.</span>
+        <span class="n">seed</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">seed</span> <span class="o">=</span> <span class="p">(</span><span class="n">seed</span> <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">4</span><span class="p">)),</span> <span class="mi">16</span><span class="p">))</span>
+        <span class="n">rs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        
+        <span class="c1"># Randomly select q1 on each bootstrap sample</span>
+        <span class="c1"># Generate bootstrap index of sample and predictor</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q1</span>
+        <span class="n">select_prop</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">coef_result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_feature</span><span class="p">)</span>
+        <span class="n">Selected_q</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_feature</span><span class="p">),</span> <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q1</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">select_prop</span><span class="p">)</span>
+        <span class="n">Bootstrap_Index</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sample</span><span class="p">),</span> <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_sample</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">X_train_B</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">Bootstrap_Index</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">Selected_q</span><span class="p">]</span>
+        <span class="n">y_train_B</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">Bootstrap_Index</span><span class="p">]</span>
+        
+        <span class="c1"># Standardization</span>
+        <span class="n">X_train_Data</span><span class="p">,</span> <span class="n">y_train_Data</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">standardization</span><span class="p">(</span><span class="n">X_train_B</span><span class="p">,</span> <span class="n">y_train_B</span><span class="p">)</span>
+        
+        <span class="c1"># Search for otpimal alpha</span>
+        <span class="n">mses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">alphas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">alphas</span><span class="p">:</span>
+            <span class="n">cv_enet</span> <span class="o">=</span> <span class="n">glmnet</span><span class="o">.</span><span class="n">ElasticNet</span><span class="p">(</span><span class="n">standardize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;mean_squared_error&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_Data</span><span class="p">,</span> <span class="n">y_train_Data</span><span class="p">)</span>
+            <span class="n">mses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mses</span><span class="p">,</span> <span class="n">cv_enet</span><span class="o">.</span><span class="n">cv_mean_score_</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">opt_alpha</span> <span class="o">=</span> <span class="n">alphas</span><span class="p">[</span><span class="n">mses</span><span class="o">.</span><span class="n">argmax</span><span class="p">()]</span>
+         
+        <span class="c1"># Estimate coefficients</span>
+        <span class="n">enet_fin</span> <span class="o">=</span> <span class="n">glmnet</span><span class="o">.</span><span class="n">ElasticNet</span><span class="p">(</span><span class="n">standardize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;mean_squared_error&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">opt_alpha</span><span class="p">)</span>
+        <span class="n">coef_result</span><span class="p">[</span><span class="n">Selected_q</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">enet_fin</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_Data</span><span class="p">,</span> <span class="n">y_train_Data</span><span class="p">)</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span> <span class="o">/</span> <span class="n">std</span>
+        
+        <span class="k">return</span> <span class="n">coef_result</span></div>
+        
+
+        
+<div class="viewcode-block" id="HiLASSO_Spark.Estimate_coefficient_Adaptive"><a class="viewcode-back" href="../../api_reference.html#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.Estimate_coefficient_Adaptive">[docs]</a>    <span class="k">def</span> <span class="nf">Estimate_coefficient_Adaptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimation of coefficients for each bootstrap sample using Adaptive_LASSO</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        coef_result : coefficient for Adaprive_LASSO         </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Set random seed as each bootstrap_number.</span>
+        <span class="n">seed</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">seed</span> <span class="o">=</span> <span class="p">(</span><span class="n">seed</span> <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">4</span><span class="p">)),</span> <span class="mi">16</span><span class="p">))</span>
+        <span class="n">rs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+        <span class="c1"># Randomly select q2 on each bootstrap sample.</span>
+        <span class="c1"># Generate bootstrap index of sample and predictor.</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q2</span>
+        <span class="n">select_prop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Importance_score_fin</span>
+        <span class="n">coef_result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_feature</span><span class="p">)</span>
+        <span class="n">Selected_q</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_feature</span><span class="p">),</span> <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q1</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">select_prop</span><span class="p">)</span>
+        <span class="n">Bootstrap_Index</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sample</span><span class="p">),</span> <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_sample</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">X_train_B</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">Bootstrap_Index</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">Selected_q</span><span class="p">]</span>
+        <span class="n">y_train_B</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">Bootstrap_Index</span><span class="p">]</span>                             
+        
+        <span class="c1"># Standardization</span>
+        <span class="n">X_train_Data</span><span class="p">,</span> <span class="n">y_train_Data</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">standardization</span><span class="p">(</span><span class="n">X_train_B</span><span class="p">,</span> <span class="n">y_train_B</span><span class="p">)</span>
+        
+        <span class="c1"># Estimate coefficients</span>
+        <span class="n">ad_fin</span> <span class="o">=</span> <span class="n">glmnet</span><span class="o">.</span><span class="n">ElasticNet</span><span class="p">(</span><span class="n">fit_intercept</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">standardize</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>  <span class="n">n_splits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;mean_squared_error&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">coef_result</span><span class="p">[</span><span class="n">Selected_q</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">ad_fin</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_Data</span><span class="p">,</span> <span class="n">y_train_Data</span><span class="p">,</span> <span class="n">relative_penalties</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">select_prop</span><span class="p">[</span><span class="n">Selected_q</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span><span class="p">))</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span> <span class="o">/</span> <span class="n">std</span>
+ 
+        <span class="k">return</span> <span class="n">coef_result</span></div>
+        
+    
+    
+<div class="viewcode-block" id="HiLASSO_Spark.P_value_calculate"><a class="viewcode-back" href="../../api_reference.html#hi_lasso_pyspark.Hi_LASSO_spark.HiLASSO_Spark.P_value_calculate">[docs]</a>    <span class="k">def</span> <span class="nf">P_value_calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coef_result</span><span class="p">):</span>
+        
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute p-values of each predictor for Statistical Test of Variable Selection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate_Boolean: non-zero and notnull of coef_result</span>
+        <span class="n">not_null_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">coef_result</span><span class="p">)</span>
+        <span class="n">Calculate_Boolean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">not_null_value</span><span class="p">,</span> <span class="n">coef_result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="c1"># pi: the average of the selcetion ratio of all feature variables in B boostrap samples.</span>
+        <span class="n">pi</span> <span class="o">=</span> <span class="n">Calculate_Boolean</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">not_null_value</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">binom</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="n">Calculate_Boolean</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">pi</span><span class="p">)</span></div></div>
+    
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Seungha Jeong
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
