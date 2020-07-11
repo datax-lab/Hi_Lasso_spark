@@ -20,6 +20,7 @@ Spark is basically a computational engine, that works with huge sets of data by 
    api_reference
    Test_package_using_csv
    Test_package_using_url
+   Test_package_using_json
 
 What is Hi-LASSO?
 ==========================================
