@@ -35,7 +35,10 @@ class HiLASSO_Spark:
     Apache Spark is a distributed framework that can handle Big Data analysis. 
     Spark is basically a computational engine, that works with huge sets of data by processing them in parallel and batch systems.
     
-    • RDD: PySpark basically helps data scientists to easily work with Resilient Distributed Datasets.
+    • RDD: Resilient Distributed Datasets (RDD) is a fundamental data structure of Spark. 
+    It is an immutable distributed collection of objects. Each dataset in RDD is divided into logical partitions, 
+    which may be computed on different nodes of the cluster.
+    PySpark basically helps data scientists to easily work with Resilient Distributed Datasets.
     • Speed: This framework is known for its greater speed compared with the other traditional data processing frameworks.
     • Caching and Disk persistence: This has a powerful caching and disk persistence mechanism for datasets that make it incredibly faster and better than others.
     • Resilient Distributed Datasets – these are basically datasets that are fault-tolerant and distributed in nature. 
@@ -97,7 +100,7 @@ class HiLASSO_Spark:
         self.y = np.array(y).flatten()
         self.n_sample, self.n_feature = X.shape
         self.q1 = self.X.shape[0] if q1 == 'auto' else q1
-        self.q2 = self.X.shape[0] if q1 == 'auto' else q2
+        self.q2 = self.X.shape[0] if q2 == 'auto' else q2
         self.d = d
         self.alpha = alpha
         self.cv = cv
