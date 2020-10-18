@@ -83,7 +83,7 @@ class HiLASSO_Spark:
     >>> model.selected_var_ 
     """
     
-    def __init__(self, X, y, alpha = 0.95, q1 = 'auto', q2 = 'auto', B = 'auto', d = 0.05, cv = 5):
+    def __init__(self, X, y, alpha = 0.95, q1 = 'auto', q2 = 'auto', B = 'auto', d = 0.05, cv = 5, node = 'auto'):
         
         self.X = np.array(X)
         self.y = np.array(y).flatten()
@@ -93,6 +93,7 @@ class HiLASSO_Spark:
         self.d = d
         self.alpha = alpha
         self.cv = cv
+        self.node = os.cpu_count() if node == 'auto' else node
         self.B = math.floor(norm.ppf(self.alpha, loc = 0, scale = 1) ** 2 * self.q1 / self.n_feature * (1 - self.q1 / self.n_feature) / self.d ** 2) if B == 'auto' else B
              
         
@@ -170,7 +171,7 @@ class HiLASSO_Spark:
         # Procedure 1: Compute coefficients and importance scores for predictors.
         # Perform parallel processing by mapping the number of bootstraps.
         Elastic_Estimate = self.Estimate_coefficient_Elastic
-        Procedure_1_coef = sc.parallelize(range(self.B), 8).map(lambda x: Elastic_Estimate(x)).collect()
+        Procedure_1_coef = sc.parallelize(range(self.B), self.node).map(lambda x: Elastic_Estimate(x)).collect()
         Procedure_1_coef_ = np.array(list(Procedure_1_coef)).T
         
         
@@ -185,7 +186,7 @@ class HiLASSO_Spark:
         # Procedure 2: Compute coefficients and Select variables.
         # Perform parallel processing by mapping the number of bootstraps.
         Adaptive_Estimate = self.Estimate_coefficient_Adaptive
-        Procedure_2_coef = sc.parallelize(range(self.B), 8).map(lambda x: Adaptive_Estimate(x)).collect()
+        Procedure_2_coef = sc.parallelize(range(self.B), self.node).map(lambda x: Adaptive_Estimate(x)).collect()
         Procedure_2_coef_ = np.array(list(Procedure_2_coef)).T
 
         # Estimate Final Coefficient and Select variables.
