@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="Hi_LASSO_spark",
+    name="hi_lasso_spark",
     version="0.1.1",
     author="Seungha Jeong",
     author_email="jsh29368602@gmail.com",
