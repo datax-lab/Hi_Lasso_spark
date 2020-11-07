@@ -16,7 +16,7 @@ from pyspark.sql import SQLContext
 """
     • SparkConf() : Configuration for a Spark application. Used to set various Spark parameters as key-value pairs.
                     Most of the time, you would create a SparkConf object with new SparkConf(), which will load values from any spark.
-                    For example, you can write new SparkConf().setMaster("local").setAppName("My app").
+                    For example, you can write new SparkConf().setMaster("local").setAppName("My app"). 
 
     • getOrCreate() : This function may be used to get or instantiate a SparkContext and register it as a singleton object.
 
