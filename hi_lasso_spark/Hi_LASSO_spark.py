@@ -13,6 +13,7 @@ import binascii
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SQLContext
 
+
 """
     • SparkConf() : Configuration for a Spark application. Used to set various Spark parameters as key-value pairs.
                     Most of the time, you would create a SparkConf object with new SparkConf(), which will load values from any spark.
@@ -21,12 +22,12 @@ from pyspark.sql import SQLContext
     • getOrCreate() : This function may be used to get or instantiate a SparkContext and register it as a singleton object.
 
 """
-conf = SparkConf().setMaster("local[*]").setAppName("PySparkShell")
+conf = SparkConf().setMaster("local[*]").setAppName("Hi_LASSO_Spark")
 sc = SparkContext.getOrCreate(conf)
 sqlContext = SQLContext(sc)
 
 
-class HiLASSO_Spark:
+class HiLASSO_Spark():
     
     """
     Hi-LASSO_Spark(High-Demensinal LASSO Spark) is to improve the LASSO solutions for extremely high-dimensional data using pyspark. 
@@ -55,14 +56,13 @@ class HiLASSO_Spark:
         When to set 'auto', use q1 as number of samples.
     q2: 'auto' or int, optional [default = 'auto']
         The number of predictors to randomly selecting in Procedure 2.
-        When to set 'auto', use q2 as number of samples.        
+        When to set 'auto', use q2 as number of samples.
+    L: int [default=30]
+       The expected value at least how many times a predictor is selected in a bootstrapping.        
     alpha: float [default=0.95]
         confidence level for determination of bootstrap sample size.
-    d: float [default=0.05]
-        sampling error for determination of bootsrap sample size.
-    B: 'auto' or int, optional [default='auto']
-        The number of bootstrap samples.
-        When to set 'auto', B is determined by statistical strategy(using alpha and d). 
+    node: Node refers to node which runs the application code in the cluster. 
+        If you do not specify the number of nodes, the 8 nodes are automatically set to the default node.
         
     
     Attributes
@@ -83,18 +83,21 @@ class HiLASSO_Spark:
     >>> model.selected_var_ 
     """
     
-    def __init__(self, X, y, alpha = 0.95, q1 = 'auto', q2 = 'auto', B = 'auto', d = 0.05, cv = 5):
+    def __init__(self, X, y, X_test = 'auto', y_test = 'auto', alpha = 0.95, q1 = 'auto', q2 = 'auto', L = 30, cv = 5, node = 40, logistic = False):
         
         self.X = np.array(X)
         self.y = np.array(y).flatten()
+        self.X_test = np.array(X_test)
+        self.y_test = np.array(y_test).flatten()
         self.n_sample, self.n_feature = X.shape
         self.q1 = self.X.shape[0] if q1 == 'auto' else q1
         self.q2 = self.X.shape[0] if q2 == 'auto' else q2
-        self.d = d
         self.alpha = alpha
         self.cv = cv
-        self.B = math.ceil(norm.ppf(self.alpha, loc = 0, scale = 1) ** 2 * self.q1 / self.n_feature * (1 - self.q1 / self.n_feature) / self.d ** 2) if B == 'auto' else B
-             
+        self.L = L
+        self.node = 8 if node == 'auto' else node
+        self.logistic = logistic
+        
         
    
     def standardization(self, X, y):
@@ -169,8 +172,9 @@ class HiLASSO_Spark:
         
         # Procedure 1: Compute coefficients and importance scores for predictors.
         # Perform parallel processing by mapping the number of bootstraps.
+        self.B = math.floor(self.L * self.n_feature / self.q1)
         Elastic_Estimate = self.Estimate_coefficient_Elastic
-        Procedure_1_coef = sc.parallelize(range(self.B), 8).map(lambda x: Elastic_Estimate(x)).collect()
+        Procedure_1_coef = sc.parallelize(range(self.B), self.node).map(lambda x: Elastic_Estimate(x)).collect()
         Procedure_1_coef_ = np.array(list(Procedure_1_coef)).T
         
         
@@ -179,22 +183,40 @@ class HiLASSO_Spark:
         Importance_score_2 = np.where(Importance_score == 0, 1e-10, Importance_score)
         self.Importance_score_fin = Importance_score_2 / Importance_score_2.sum()
     
-        print('Procedure_1_fin.')
+        print('Procedure_1')
         
         
         # Procedure 2: Compute coefficients and Select variables.
         # Perform parallel processing by mapping the number of bootstraps.
-        Adaptive_Estimate = self.Estimate_coefficient_Adaptive
-        Procedure_2_coef = sc.parallelize(range(self.B), 8).map(lambda x: Adaptive_Estimate(x)).collect()
-        Procedure_2_coef_ = np.array(list(Procedure_2_coef)).T
-
-        # Estimate Final Coefficient and Select variables.
-        coef = np.nanmean(Procedure_2_coef_, axis=1)
-        self.coef_ = coef
-        self.p_values = self.P_value_calculate(Procedure_2_coef_)
-        self.selected_var = np.where(self.p_values < significance_level / self.n_feature, np.nanmean(Procedure_2_coef_, axis=1), 0)
         
-        print('Procedure_2_fin.')
+        if self.logistic:
+            self.B = math.floor(self.L * self.n_feature / self.q2)
+            Adaptive_Estimate = self.Estimate_coefficient_Adaptive_logistic
+            Procedure_2_coef = sc.parallelize(range(self.B), self.node).map(lambda x: Adaptive_Estimate(x)).collect()
+            Procedure_2_coef_ = np.array(list(Procedure_2_coef)).T
+
+            #Estimate Final Coefficient and Select variables.
+            coef = np.nanmean(Procedure_2_coef_, axis=1)
+            self.aaa = coef
+            y = np.zeros_like(coef)
+            y[coef>0.5] = 1
+            self.finn = y
+            print('Procedure_2')
+            
+        else:
+            self.B = math.floor(self.L * self.n_feature / self.q2)
+            Adaptive_Estimate = self.Estimate_coefficient_Adaptive
+            Procedure_2_coef = sc.parallelize(range(self.B), self.node).map(lambda x: Adaptive_Estimate(x)).collect()
+            Procedure_2_coef_ = np.array(list(Procedure_2_coef)).T
+
+            #Estimate Final Coefficient and Select variables.
+            coef = np.nanmean(Procedure_2_coef_, axis=1)
+            
+            
+            self.coef_ = coef
+            self.p_values = self.Calculate_p_value(Procedure_2_coef_)
+            self.selected_var = np.where(self.p_values < significance_level / self.n_feature, np.nanmean(Procedure_2_coef_, axis=1), 0)
+            print('Procedure_2')
         return self
     
     
@@ -208,7 +230,6 @@ class HiLASSO_Spark:
         -------
         coef_result : coefficient for Elastic_Net        
         """
-        
         # Set random seed as each bootstrap_number.
         seed = None
         seed = (seed if seed is not None else int(binascii.hexlify(os.urandom(4)), 16))
@@ -221,23 +242,32 @@ class HiLASSO_Spark:
         coef_result = np.zeros(self.n_feature)
         Selected_q = rs.choice(np.arange(self.n_feature), size = self.q1, replace=False, p = select_prop)
         Bootstrap_Index = rs.choice(np.arange(self.n_sample), size = self.n_sample, replace=True, p = None)
-        X_train_B = self.X[Bootstrap_Index, :][:, Selected_q]
-        y_train_B = self.y[Bootstrap_Index]
+        X_train_Data = self.X[Bootstrap_Index, :][:, Selected_q]
+        y_train_Data = self.y[Bootstrap_Index]
         
-        # Standardization
-        X_train_Data, y_train_Data, std = self.standardization(X_train_B, y_train_B)
-        
+
         # Search for otpimal alpha
         mses = np.array([])
+        accuracys = np.array([])
         alphas = np.arange(0, 1.1, 0.1)
-        for j in alphas:
-            cv_enet = glmnet.ElasticNet(standardize=False, fit_intercept=False, n_splits=self.cv, scoring='mean_squared_error', alpha=j).fit(X_train_Data, y_train_Data)
-            mses = np.append(mses, cv_enet.cv_mean_score_.max())
-        opt_alpha = alphas[mses.argmax()]
-         
+        
         # Estimate coefficients
-        enet_fin = glmnet.ElasticNet(standardize=False, fit_intercept=False, n_splits=self.cv, scoring='mean_squared_error', alpha=opt_alpha)
-        coef_result[Selected_q] = (enet_fin.fit(X_train_Data, y_train_Data).coef_) / std
+        if self.logistic:
+            for j in alphas:
+                cv_enet = glmnet.LogitNet(standardize=True, fit_intercept=True, n_splits=self.cv, scoring='accuracy', alpha=j).fit(X_train_Data, y_train_Data)
+                accuracys = np.append(accuracys, cv_enet.cv_mean_score_.max())
+            opt_alpha = alphas[accuracys.argmax()]
+            enet_fin = glmnet.LogitNet(standardize=True, fit_intercept=True, n_splits=self.cv, scoring='accuracy', alpha=opt_alpha)
+            coef_result[Selected_q] = (enet_fin.fit(X_train_Data, y_train_Data).coef_)
+        else:
+            # Standardization
+            X_train_Data, y_train_Data, std = self.standardization(X_train_Data, y_train_Data)
+            for j in alphas:
+                cv_enet = glmnet.ElasticNet(standardize=False, fit_intercept=False, n_splits=self.cv, scoring='mean_squared_error', alpha=j).fit(X_train_Data, y_train_Data)
+                mses = np.append(mses, cv_enet.cv_mean_score_.max())
+            opt_alpha = alphas[mses.argmax()]
+            enet_fin = glmnet.ElasticNet(standardize=False, fit_intercept=False, n_splits=self.cv, scoring='mean_squared_error', alpha=opt_alpha)
+            coef_result[Selected_q] = (enet_fin.fit(X_train_Data, y_train_Data).coef_) / std
         
         return coef_result
         
@@ -265,21 +295,49 @@ class HiLASSO_Spark:
         coef_result = np.zeros(self.n_feature)
         Selected_q = rs.choice(np.arange(self.n_feature), size = self.q1, replace=False, p = select_prop)
         Bootstrap_Index = rs.choice(np.arange(self.n_sample), size = self.n_sample, replace=True, p = None)
-        X_train_B = self.X[Bootstrap_Index, :][:, Selected_q]
-        y_train_B = self.y[Bootstrap_Index]                             
+        X_train_Data = self.X[Bootstrap_Index, :][:, Selected_q]
+        y_train_Data = self.y[Bootstrap_Index]                             
+        
         
         # Standardization
-        X_train_Data, y_train_Data, std = self.standardization(X_train_B, y_train_B)
-        
-        # Estimate coefficients
+        X_train_Data, y_train_Data, std = self.standardization(X_train_Data, y_train_Data)
         ad_fin = glmnet.ElasticNet(fit_intercept = False, standardize = False,  n_splits = self.cv, scoring='mean_squared_error', alpha = 1)
         coef_result[Selected_q] = (ad_fin.fit(X_train_Data, y_train_Data, relative_penalties = 1 / (select_prop[Selected_q] * 100)).coef_) / std
- 
+        
         return coef_result
         
+        
+    def Estimate_coefficient_Adaptive_logistic(self, value):
+        """
+        Estimation of coefficients for each bootstrap sample using Adaptive_LASSO
+        
+        Returns
+        -------
+        coef_result : coefficient for Adaprive_LASSO         
+        """
+        
+        # Set random seed as each bootstrap_number.
+        seed = None
+        seed = (seed if seed is not None else int(binascii.hexlify(os.urandom(4)), 16))
+        rs = np.random.RandomState(seed)
+
+        # Randomly select q2 on each bootstrap sample.
+        # Generate bootstrap index of sample and predictor.
+        q = self.q2
+        select_prop = self.Importance_score_fin
+        coef_result = np.zeros(self.n_feature)
+        Selected_q = rs.choice(np.arange(self.n_feature), size = self.q2, replace=False, p = select_prop)
+        Bootstrap_Index = rs.choice(np.arange(self.n_sample), size = self.n_sample, replace=True, p = None)
+        X_train_Data = self.X[Bootstrap_Index, :][:, Selected_q]
+        y_train_Data = self.y[Bootstrap_Index]
+        X_test = self.X_test[: , :][:, Selected_q]
+        ad_fin = glmnet.LogitNet(standardize=True, fit_intercept=True, n_splits = self.cv, alpha = 1)
+        coef_result = (ad_fin.fit(X_train_Data, y_train_Data, relative_penalties = 1 / (select_prop[Selected_q] * 100)).predict(X_test))
+
+        return coef_result
     
-    
-    def P_value_calculate(self, coef_result):
+        
+    def Calculate_p_value(self, coef_result):
         
         """
         Compute p-values of each predictor for Statistical Test of Variable Selection.
@@ -291,4 +349,3 @@ class HiLASSO_Spark:
         # pi: the average of the selcetion ratio of all feature variables in B boostrap samples.
         pi = Calculate_Boolean.sum() / not_null_value.sum().sum()
         return binom.sf(Calculate_Boolean - 1, n = self.B, p = pi)
-    
