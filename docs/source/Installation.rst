@@ -28,7 +28,7 @@ Installing Hi-LASSO-spark
 ``Hi-LASSO-spark`` is available through PyPI and can easily be installed with a
 pip install::
 
-    pip install hi_lasso_pyspark
+    pip install hi_lasso_spark
 
 The PyPI version is updated regularly, however for the latest update, you
 should clone from GitHub and install it directly::
