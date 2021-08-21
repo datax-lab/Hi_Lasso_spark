@@ -10,7 +10,7 @@ Spark is basically a computational engine, that works with huge sets of data by 
 ``Hi-LASSO_spark`` is available through PyPI and can easily be installed with a
 pip install::
 ```
-pip install hi_lasso_pyspark
+pip install hi_lasso_spark
 ```
 
 ## Documentation
@@ -24,7 +24,7 @@ X = pd.read_csv('simulation_data_x.csv')
 y = pd.read_csv('simulation_data_y.csv')
 
 # General Usage
-from hi_lasso_pyspark.Hi_LASSO_spark import HiLASSO_Spark
+from hi_lasso_spark.Hi_LASSO_spark import HiLASSO_Spark
 
 # Create a HiLasso model
 model = HiLASSO_Spark(X, y, q1 = 'auto', q2 = 'auto', B = 'auto', d = 0.05, alpha = 0.95)
