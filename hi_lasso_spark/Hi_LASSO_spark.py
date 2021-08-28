@@ -81,7 +81,7 @@ class HiLASSO_Spark():
     >>> model.selected_var_ 
     """
     
-    def __init__(self, X, y, X_test = 'auto', y_test = 'auto', alpha = 0.05, q1 = 'auto', q2 = 'auto', L = 30, cv = 5, node = 40, logistic = False):
+    def __init__(self, X, y, X_test = 'auto', y_test = 'auto', alpha = 0.05, q1 = 'auto', q2 = 'auto', L = 30, cv = 5, node = 'auto', logistic = False):
         
         self.X = np.array(X)
         self.y = np.array(y).flatten()
