@@ -59,8 +59,8 @@ class HiLASSO_Spark():
         When to set 'auto', use q2 as number of samples.
     L: int [default=30]
        The expected value at least how many times a predictor is selected in a bootstrapping.        
-    alpha: float [default=0.95]
-        confidence level for determination of bootstrap sample size.
+    alpha: float [default=0.05]
+       significance level used for significance test for feature selection
     node: Node refers to node which runs the application code in the cluster. 
         If you do not specify the number of nodes, the 8 nodes are automatically set to the default node.
         
@@ -83,7 +83,7 @@ class HiLASSO_Spark():
     >>> model.selected_var_ 
     """
     
-    def __init__(self, X, y, X_test = 'auto', y_test = 'auto', alpha = 0.95, q1 = 'auto', q2 = 'auto', L = 30, cv = 5, node = 40, logistic = False):
+    def __init__(self, X, y, X_test = 'auto', y_test = 'auto', alpha = 0.05, q1 = 'auto', q2 = 'auto', L = 30, cv = 5, node = 40, logistic = False):
         
         self.X = np.array(X)
         self.y = np.array(y).flatten()
