@@ -27,10 +27,10 @@ y = pd.read_csv('simulation_data_y.csv')
 from hi_lasso_spark.Hi_LASSO_spark import HiLASSO_Spark
 
 # Create a HiLasso model
-model = HiLASSO_Spark(X, y, alpha=0.05, q1='auto', q2='auto', L=30, cv=5, node=40, logistic=False)
+model = HiLASSO_Spark(X, y, alpha=0.05, q1='auto', q2='auto', L=30, cv=5, node='auto', logistic=False)
 
 # Fit the model
-model.fit(significance_level = 0.05)
+model.fit()
 
 # Show the coefficients
 model.coef_
