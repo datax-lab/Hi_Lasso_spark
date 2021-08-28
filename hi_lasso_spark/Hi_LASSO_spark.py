@@ -18,9 +18,7 @@ from pyspark.sql import SQLContext
     • SparkConf() : Configuration for a Spark application. Used to set various Spark parameters as key-value pairs.
                     Most of the time, you would create a SparkConf object with new SparkConf(), which will load values from any spark.
                     For example, you can write new SparkConf().setMaster("local").setAppName("My app").
-
     • getOrCreate() : This function may be used to get or instantiate a SparkContext and register it as a singleton object.
-
 """
 conf = SparkConf().setMaster("local[*]").setAppName("Hi_LASSO_Spark")
 sc = SparkContext.getOrCreate(conf)
@@ -104,14 +102,12 @@ class HiLASSO_Spark():
         
         """
         The response is mean-corrected and the predictors are standardized
-
         Parameters
         ---------
         X: array-like of shape (n_sample, n_feature)
            predictor              
         y: array-like of shape (n_sample,)
            response
-
         Returns
         -------
         np.ndarray
@@ -126,7 +122,7 @@ class HiLASSO_Spark():
 
     
 
-    def fit(self, significance_level = 0.05):
+    def fit(self):
         
         """Fit the model with Procedure 1 and Procedure 2. 
         
@@ -140,12 +136,6 @@ class HiLASSO_Spark():
         Normally, Spark tries to set the number of partitions automatically based on your cluster. 
         However, you can also set it manually by passing it as a second parameter to parallelize (e.g. sc.parallelize(data, 10)).
         
-        Parameters
-        ----------      
-        significance_level : float [default=0.05]
-            Criteria used for selecting variables.
-        
-
         Attributes
         ----------
         sc.parallelize(): method
@@ -215,7 +205,7 @@ class HiLASSO_Spark():
             
             self.coef_ = coef
             self.p_values = self.Calculate_p_value(Procedure_2_coef_)
-            self.selected_var = np.where(self.p_values < significance_level / self.n_feature, np.nanmean(Procedure_2_coef_, axis=1), 0)
+            self.selected_var = np.where(self.p_values < self.alpha / self.n_feature, np.nanmean(Procedure_2_coef_, axis=1), 0)
             print('Procedure_2')
         return self
     
